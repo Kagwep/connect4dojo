@@ -16,6 +16,7 @@ struct Player {
     address: starknet::ContractAddress,
     last_action:u64,
     color: Color
+    
 }
 
  

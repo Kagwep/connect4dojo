@@ -15,7 +15,7 @@ struct Disc {
 
 #[derive(Copy, Drop, Serde, Introspect)]
 struct Vec2 {
-    x: u32,
-    y: u32
+    x: u8,
+    y: u8
 }
 

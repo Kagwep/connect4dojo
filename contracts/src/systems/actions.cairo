@@ -4,7 +4,7 @@
 trait IActions {
     fn spawn();
     fn join(game_id: u32); 
-    fn move(game_id: u32, x: u16 , y: u16);
+    fn move(game_id: u32, selected_col: u16);
 }
 
 
@@ -12,8 +12,8 @@ trait IActions {
 mod actions {
     use super::{IActions};
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp, Zeroable};
-    use contracts::models::{slot::{Slot}, player::{Player,Color}, disc::{Disc,Vec2}, game::{Game}};
-    use contracts::constants::{MAX_DISCS};
+    use contracts::models::{slot::{Slot}, player::{Player,Color}, disc::{Disc,Vec2}, game::{Game}, column::{Column}};
+    use contracts::constants::{MAX_DISCS,CONNECT_VALUE,ROW_COUNT};
 
     #[abi(embed_v0)]
     impl ActionsImpl of IActions<ContractState> {
@@ -34,6 +34,8 @@ mod actions {
 
             let last_action = get_block_timestamp();
 
+            let minimum_moves = 2 * CONNECT_VALUE - 1;
+
             // #[key]
             // game_id: u32,
             // #[key]
@@ -42,12 +44,34 @@ mod actions {
             // color: Color
 
             // set Players
-            set!(
-                world,
-                (
-                    Player { game_id, address,last_action, color }
-                )
-            );
+            set!(world, Player { game_id, address,last_action, color });
+
+            // #[key]
+            // game_id: u32,
+            // #[key]
+            // position: u8,
+            // last_slot_filled: Vec2,
+
+            let  last_slot_filled = Vec2{x:0,y:0};
+
+            set!(world,Column {game_id,position: 1,last_slot_filled})
+
+            set!(world,Column {game_id,position: 2,last_slot_filled})
+
+      
+            set!(world,Column {game_id,position: 3,last_slot_filled})
+
+
+            set!(world,Column {game_id,position: 4,last_slot_filled})
+
+
+            set!(world,Column {game_id,position: 5,last_slot_filled})
+
+ 
+            set!(world,Column {game_id,position: 6,last_slot_filled})
+
+    
+            set!(world,Column {game_id,position: 7,last_slot_filled})
 
             // game_id: u32,
             // player_one: ContractAddress,
@@ -56,7 +80,7 @@ mod actions {
             // num_discs: u8,
             // winner: ContractAddress,
 
-            set!(world, Game {game_id, player_one: address, player_two: Zeroable::zero(), next_to_move,num_discs: Zeroable::zero(), winner: Zeroable::zero()});
+            set!(world, Game {game_id, player_one: address, player_two: Zeroable::zero(), next_to_move,num_discs: Zeroable::zero(),minimum_moves, winner: Zeroable::zero()});
 
             
         }
@@ -64,9 +88,6 @@ mod actions {
         fn join(world: IWorldDispatcher, game_id: u32) {
 
             let address = get_caller_address();
-
-            
-
 
             let mut game = get!(world, game_id, (Game));
 
@@ -90,15 +111,18 @@ mod actions {
             };
     
             // create player entity
-            set!(world, (Player { game_id, address,last_action, color }));
+            set!(world, Player { game_id, address,last_action, color });
     
         }
 
-        fn move(world: IWorldDispatcher,game_id: u32, x: u16 , y: u16){
+        fn move(world: IWorldDispatcher,game_id: u32, selected_col: u8){
 
-            let position = Vec2 {x,y};
 
-            assert!(is_out_of_board(position), 'Should be inside board');
+            assert!(is_out_of_board(selected_col), 'Should be inside board');
+
+            let mut col = get!(world, (game_id, selected_col), Player);
+
+            assert(col.last_slot_filled.x == 6 , 'Invalid Poistion, Col full')
 
             let address = get_caller_address();
 
@@ -133,8 +157,8 @@ mod actions {
 
         }
 
-        fn is_out_of_board(position: Vec2) -> bool {
-            position.x < 1 || position.x > 7 || position.y < 1 || position.y > 6
+        fn is_out_of_board(col: u8) -> bool {
+            col < 1 || col > 7
         }
     }
 }

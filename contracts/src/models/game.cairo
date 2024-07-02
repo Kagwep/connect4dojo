@@ -9,5 +9,13 @@ struct Game {
     player_two: ContractAddress,
     next_to_move: Color,
     num_discs: u8,
+    minimum_moves: u8,
     winner: ContractAddress,
+}
+
+#[generate_trait]
+impl GameImpl of GameTrait {
+    fn is_minimum_moves_met(self: Game, move_count: u8) -> bool{
+        self.minimum_moves < move
+    }
 }

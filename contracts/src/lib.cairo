@@ -7,6 +7,7 @@ mod models {
     mod piece;
     mod game;
     mod cell;
+    mod column;
 }
 
 mod constants;
