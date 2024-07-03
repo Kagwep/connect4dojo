@@ -54,7 +54,9 @@ mod actions {
 
             let  last_slot_filled = Vec2{x:0,y:0};
 
+
             set!(world,Column {game_id,position: 1,last_slot_filled})
+
 
             set!(world,Column {game_id,position: 2,last_slot_filled})
 
@@ -124,11 +126,19 @@ mod actions {
 
             assert(col.last_slot_filled.x == 6 , 'Invalid Poistion, Col full')
 
+            let position_x = col.last_slot_filled.x + 1;
+
+            let position_y = selected_col;
+
+            let position = Vec2 {position_x, position_y};
+
             let address = get_caller_address();
 
             let mut game = get!(world, game_id, Game);
 
             assert(game.num_discs <= MAX_DISCS, 'Maximum number of discs reached.');
+
+            let disc_number = game.num_discs + 1;
 
             let mut player = get!(world, (game_id, address), Player);
 
@@ -137,10 +147,39 @@ mod actions {
             assert(game.next_to_move == player.color, 'not your turn');
 
             player.last_action = get_block_timestamp();
+
+
+            // #[key]
+            // game_id: u32,
+            // #[key]
+            // position: Vec2,
+            // color: Color,
+            // disc_number: u8,
+
+            // create player entity
+
+            let disc = Disc { game_id, position,color: player.color, disc_number: disc_number };
+
+            set!(world, disc);
+
+            col.last_slot_filled = position;
             
             set!(world, (player));
 
-            set!(world, Tile{x,y,color});
+            // #[key]
+            // game_id: u32,
+            // #[key]
+            // x: u8,
+            // #[key]
+            // y: u8,
+            // disc: Disc,
+
+
+            set!(world, Slot{game_id,position_x,position_y,disc});
+
+            game.num_discs = disc_number
+
+            set!(world,(game))
 
         }
 
@@ -159,6 +198,13 @@ mod actions {
 
         fn is_out_of_board(col: u8) -> bool {
             col < 1 || col > 7
+        }
+
+        fn check_win(world: IWorldDispatcher, address: ContractAddress, game_id: u32) -> bool {
+
+            let mut game = get!(world, game_id, Game);
+
+
         }
     }
 }

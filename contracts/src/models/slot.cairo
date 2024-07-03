@@ -7,9 +7,9 @@ struct Slot {
     #[key]
     game_id: u32,
     #[key]
-    x: u16,
+    x: u8,
     #[key]
-    y: u16,
+    y: u8,
     disc: Disc,
 
 }
